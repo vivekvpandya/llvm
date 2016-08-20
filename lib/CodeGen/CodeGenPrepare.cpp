@@ -51,6 +51,10 @@
 #include "llvm/Transforms/Utils/BypassSlowDivision.h"
 #include "llvm/Transforms/Utils/Local.h"
 #include "llvm/Transforms/Utils/SimplifyLibCalls.h"
+#include "llvm/Analysis/ProfileSummaryInfo.h"
+#include "llvm/Target/TargetFrameLowering.h"
+
+
 using namespace llvm;
 using namespace llvm::PatternMatch;
 
@@ -167,6 +171,7 @@ class TypePromotionTransaction;
 
     void getAnalysisUsage(AnalysisUsage &AU) const override {
       // FIXME: When we can selectively preserve passes, preserve the domtree.
+      AU.addRequired<ProfileSummaryInfoWrapperPass>();
       AU.addRequired<TargetLibraryInfoWrapperPass>();
       AU.addRequired<TargetTransformInfoWrapperPass>();
       AU.addRequired<LoopInfoWrapperPass>();
@@ -212,6 +217,12 @@ FunctionPass *llvm::createCodeGenPreparePass(const TargetMachine *TM) {
 }
 
 bool CodeGenPrepare::runOnFunction(Function &F) {
+  // Module *M = F.getParent();
+  // ProfileSummaryInfo *PSI = getAnalysis<ProfileSummaryInfoWrapperPass>().getPSI(*(M));
+  // if (TM->Options.EnableIPRA && PSI->isColdFunction(&F) && F.hasFnAttribute(Attribute::NoRecurse) && !F.hasAddressTaken()) {
+  //   dbgs() << "Cold Function : " << F.getName() << "\n";
+  //   F.setCallingConv(CallingConv::CXX_FAST_TLS);
+  // } // && F.doesNotAccessMemory() 
   if (skipFunction(F))
     return false;
 

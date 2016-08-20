@@ -29,7 +29,10 @@
 #include "llvm/PassAnalysisSupport.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Analysis/ProfileSummaryInfo.h"
+#include "llvm/IR/CallingConv.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Target/TargetFrameLowering.h"
 #include <map>
 #include <string>
 
@@ -76,21 +79,22 @@ INITIALIZE_PASS_BEGIN(RegUsageInfoPropagationPass, "reg-usage-propagation",
 INITIALIZE_PASS_DEPENDENCY(PhysicalRegisterUsageInfo)
 INITIALIZE_PASS_END(RegUsageInfoPropagationPass, "reg-usage-propagation",
                     RUIP_NAME, false, false)
-
+// INITIALIZE_PASS_DEPENDENCY(ProfileSummaryInfoWrapperPass)
 FunctionPass *llvm::createRegUsageInfoPropPass() {
   return new RegUsageInfoPropagationPass();
 }
 
 void RegUsageInfoPropagationPass::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<PhysicalRegisterUsageInfo>();
+  //AU.addRequired<ProfileSummaryInfoWrapperPass>();
   AU.setPreservesAll();
   MachineFunctionPass::getAnalysisUsage(AU);
 }
 
 bool RegUsageInfoPropagationPass::runOnMachineFunction(MachineFunction &MF) {
-  const Module *M = MF.getFunction()->getParent();
+  Function *F = const_cast<Function*>(MF.getFunction());
   PhysicalRegisterUsageInfo *PRUI = &getAnalysis<PhysicalRegisterUsageInfo>();
-
+  Module *M = F->getParent();
   DEBUG(dbgs() << " ++++++++++++++++++++ " << getPassName()
                << " ++++++++++++++++++++  \n");
   DEBUG(dbgs() << "MachineFunction : " << MF.getName() << "\n");

@@ -29,6 +29,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetFrameLowering.h"
 
+
 using namespace llvm;
 
 #define DEBUG_TYPE "ip-regalloc"
@@ -82,7 +83,7 @@ bool RegUsageInfoCollector::runOnMachineFunction(MachineFunction &MF) {
   MachineRegisterInfo *MRI = &MF.getRegInfo();
   const TargetRegisterInfo *TRI = MF.getSubtarget().getRegisterInfo();
   const TargetMachine &TM = MF.getTarget();
-
+  Function *F = const_cast<Function*>(MF.getFunction());
   DEBUG(dbgs() << " -------------------- " << getPassName()
                << " -------------------- \n");
   DEBUG(dbgs() << "Function Name : " << MF.getName() << "\n");
@@ -94,8 +95,6 @@ bool RegUsageInfoCollector::runOnMachineFunction(MachineFunction &MF) {
   // the number of registers divided by 32 for the size.
   unsigned RegMaskSize = (TRI->getNumRegs() + 31) / 32;
   RegMask.resize(RegMaskSize, 0xFFFFFFFF);
-
-  const Function *F = MF.getFunction();
 
   PhysicalRegisterUsageInfo *PRUI = &getAnalysis<PhysicalRegisterUsageInfo>();
 
